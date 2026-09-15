@@ -472,6 +472,13 @@
             letter-spacing: 1px;
             text-align: center;
         }
+
+        /* ===== 備前 備中 BINGO！ ===== */
+        .bingo-home-btn{background:linear-gradient(45deg,#0f4c81,#00a45b)!important;border-color:#ffd700!important;line-height:1.25}.bingo-home-btn strong{display:block;margin-top:4px;color:#ffd700;font-size:1.05rem}
+        #bingo-screen{overflow-y:auto;justify-content:flex-start;padding:24px 0}.bingo-event-badge{font-size:.78rem;color:#ffd700;border:1px solid rgba(255,215,0,.55);border-radius:999px;padding:4px 14px;margin-bottom:8px;background:rgba(255,215,0,.08)}
+        #bingo-card{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;width:min(92vw,680px);margin:14px auto 12px}.bingo-cell{min-height:118px;perspective:900px;border-radius:12px}.bingo-cell-inner{position:relative;width:100%;height:100%;min-height:inherit;transform-style:preserve-3d;transition:transform .68s cubic-bezier(.2,.75,.2,1)}.bingo-cell.flipped .bingo-cell-inner{transform:rotateY(180deg)}
+        .bingo-face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-radius:12px;border:1px solid #444;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;box-sizing:border-box}.bingo-front{background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.08),transparent 35%),linear-gradient(145deg,#111,#222);color:#ddd}.bingo-front-mark{font-size:.72rem;letter-spacing:2px;color:#ffd700;font-weight:bold}.bingo-front-symbol{font-size:1.5rem;color:#777}.bingo-back{transform:rotateY(180deg);background:linear-gradient(145deg,#14261a,#0f1712);border-color:#2ee6a6;padding:7px;text-align:center}.bingo-cell.bingo-line-hit .bingo-back{border-color:#ffd700;box-shadow:inset 0 0 18px rgba(255,215,0,.16),0 0 10px rgba(255,215,0,.2)}.bingo-mission-icon{font-size:1.3rem;line-height:1}.bingo-mission-title{font-size:.76rem;font-weight:bold;color:#fff;line-height:1.15}.bingo-mission-desc{font-size:.62rem;color:#bdebd9;line-height:1.22}.bingo-progress{width:100%;height:5px;background:#202820;border-radius:99px;overflow:hidden}.bingo-progress>span{display:block;height:100%;background:linear-gradient(90deg,#2ee6a6,#ffd700)}.bingo-progress-text{font-size:.62rem;color:#ffd700;font-weight:bold}
+        #bingo-summary{width:min(92vw,680px);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px}.bingo-stat{background:#111;border:1px solid #333;border-radius:10px;padding:9px 12px;display:flex;justify-content:space-between;gap:10px;font-size:.82rem;color:#ccc}.bingo-stat b{color:#ffd700}.bingo-complete-wrap{grid-column:1/-1;background:#111;border:1px solid #333;border-radius:10px;padding:10px 12px}.bingo-complete-label{display:flex;justify-content:space-between;font-size:.8rem;color:#ccc;margin-bottom:7px}.bingo-complete-label b{color:#2ee6a6}.bingo-complete-bar{height:10px;border-radius:99px;background:#222;overflow:hidden;border:1px solid #444}.bingo-complete-bar span{display:block;height:100%;background:linear-gradient(90deg,#2ee6a6,#ffd700);transition:width .3s ease}@media(max-width:760px){#bingo-card{gap:5px}.bingo-cell{min-height:92px;border-radius:9px}.bingo-face{border-radius:9px}.bingo-mission-icon{font-size:1rem}.bingo-mission-title{font-size:.62rem}.bingo-mission-desc{font-size:.52rem}#bingo-summary{grid-template-columns:1fr}}
     </style>
 </head>
 <body>
@@ -494,6 +501,7 @@
         <button id="btn-open-ai" class="main-btn">🤖 AI対戦モード (一人用)</button>
         <button id="btn-open-skin" class="main-btn">スキン・タトゥー変更</button>
         <button id="btn-open-gacha" class="main-btn">🎰 ガチャを回す (25🫘)</button>
+        <button id="btn-open-bingo" class="main-btn bingo-home-btn">🎲 期間限定イベント<strong>備前 備中 BINGO！</strong></button>
         <button id="btn-free-tattoo-gacha" class="main-btn" style="display:none; background: linear-gradient(45deg, #7B1173, #E03C8A);">🎁 初回限定タトゥー無料ガチャ！</button>
 
         <div class="volume-control">
@@ -590,6 +598,7 @@
         </div>
     </div>
 
+    <div id="bingo-screen" class="screen"><div class="bingo-event-badge">🎲 期間限定イベント開催中</div><h2 class="rainbow-text">備前 備中 BINGO！</h2><div class="stats" style="font-size:1rem;margin-bottom:6px">ミッションを達成して25マスを開こう！</div><div id="bingo-card" aria-label="備前 備中 BINGOカード"></div><div id="bingo-summary"></div><button id="btn-close-bingo" class="main-btn" style="width:auto;padding:10px 30px;font-size:1.2rem">ホームに戻る</button></div><div id="bingo-reward-overlay" class="gacha-result-overlay"><div id="bingo-reward-card" class="gacha-result-card rank-ace"><div id="bingo-reward-rank" class="gacha-result-rank rank-text-ace"></div><div id="bingo-reward-visual" class="gacha-result-visual"></div><div id="bingo-reward-name" class="gacha-result-name"></div><div id="bingo-reward-note" class="gacha-result-note"></div><button id="btn-bingo-reward-close" class="main-btn" style="width:auto;padding:8px 24px">閉じる</button></div></div>
     <div id="tutorial-screen" class="screen">
         <h2>📖 遊び方ガイド</h2>
         <div class="tutorial-box">
@@ -701,15 +710,17 @@
         function addBeans(amount) {
             beans += amount;
             localStorage.setItem('beans', beans);
+            if (!window.bingoSuppressBeanTracking) window.trackBingoEvent?.('beansEarned', amount);
         }
         function spendBeans(amount) {
             if (beans < amount) return false;
             beans -= amount;
             localStorage.setItem('beans', beans);
+            window.trackBingoEvent?.('beansSpent', amount);
             return true;
         }
         function updateBeanDisplays() {
-            const ids = ['home-bean-count', 'skin-bean-count', 'gacha-bean-count'];
+            const ids = ['home-bean-count', 'skin-bean-count', 'gacha-bean-count', 'bingo-bean-count'];
             ids.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.innerText = beans;
@@ -818,7 +829,8 @@
             { id: '#FFD700', name: '金',     rank: 'ace' },
             { id: '#C0C0C0', name: '銀',     rank: 'ace' },
             { id: '#FFFFFF', name: '白',     rank: 'ace' },
-            { id: 'rainbow', name: 'レインボー', rank: 'god' }
+            { id: 'rainbow', name: 'レインボー', rank: 'god' },
+            { id: 'camouflage', name: '迷彩柄', rank: 'god', eventOnly: true }
         ];
 
         // タトゥーピックアップ：ワンポイント(漢字)70% / エース(龍剣魂凛轟)29% / ゴッド(絵文字)1%
@@ -834,7 +846,8 @@
             { id: '口', rank: 'point' },
             { id: '龍', rank: 'ace' }, { id: '剣', rank: 'ace' }, { id: '魂', rank: 'ace' },
             { id: '凛', rank: 'ace' }, { id: '轟', rank: 'ace' },
-            { id: '🔥', rank: 'god' }, { id: '🔞', rank: 'god' }, { id: '⭐', rank: 'god' }
+            { id: '🔥', rank: 'god' }, { id: '🔞', rank: 'god' }, { id: '⭐', rank: 'god' },
+            { id: '😇', rank: 'god', eventOnly: true }
         ];
 
         const RANK_INFO = {
@@ -845,6 +858,7 @@
         const GACHA_COST = 25;
 
         function resolveSkinColor(skinId) {
+            if (skinId === 'camouflage') return '#4B5D3A';
             if (skinId === 'rainbow') {
                 const hue = (Date.now() / 20) % 360;
                 return `hsl(${hue}, 100%, 55%)`;
@@ -864,12 +878,13 @@
                 alert(`豆が足りません（必要:${GACHA_COST}🫘 / 所持:${beans}🫘）`);
                 return;
             }
+            window.trackBingoEvent?.('gacha', 1);
             const pool = (type === 'skin') ? SKIN_POOL : TATTOO_POOL;
             const ownedSet = (type === 'skin') ? ownedSkins : ownedTattoos;
             const saveKey = (type === 'skin') ? 'ownedSkins' : 'ownedTattoos';
 
             const rank = pickGachaRank();
-            const candidates = pool.filter(item => item.rank === rank);
+            const candidates = pool.filter(item => item.rank === rank && !item.eventOnly);
             const picked = candidates[Math.floor(Math.random() * candidates.length)];
 
             const alreadyOwned = ownedSet.has(picked.id);
@@ -1179,7 +1194,7 @@
                     if (skin.id === 'rainbow') {
                         item.classList.add('rainbow-bg');
                     } else {
-                        item.style.backgroundColor = skin.id;
+                        setSkinElementBackground(item, skin.id);
                     }
                     item.onclick = () => {
                         side.set(skin.id);
@@ -1419,6 +1434,7 @@
             }
 
             takeDamage(amount) {
+                window.trackBingoEvent?.('damage', Math.max(0, amount));
                 if (amount <= 0 || this.isClone) return;
                 const wasAlive = this.hp > 0;
                 this.hp = Math.max(0, this.hp - amount);
@@ -2016,6 +2032,7 @@
 
         window.placeBet = function(side) {
             playerBet = side;
+            window.trackBingoEvent?.('bet', 1);
             gameStarted = true;
             btnLeft.disabled = true;
             btnRight.disabled = true;
@@ -2035,6 +2052,7 @@
         }
 
         function startRouletteBoth() {
+            window.trackBingoEvent?.('collision', 1);
             if (leftRouletteTimer <= 0) {
                 leftRouletteTimer = 50;
                 leftRouletteIsChest = false;
@@ -2047,6 +2065,7 @@
         }
 
         function startRouletteSingle(ball, isChest = false) {
+            if (isChest) window.trackBingoEvent?.('chest', 1);
             if (ball === leftBall && leftRouletteTimer <= 0) {
                 leftRouletteTimer = 50;
                 leftRouletteIsChest = isChest;
@@ -2078,6 +2097,7 @@
             }
 
             if (selectedTrait.id !== 'none') {
+                window.trackBingoTrait?.(selectedTrait);
                 if (selectedTrait.id === 'gun') ball.hasGun = true;
                 else if (selectedTrait.id === 'saw') ball.hasSaw = true;
                 else if (selectedTrait.id === 'spike') ball.spikeCount++; 
@@ -2313,6 +2333,7 @@
                 const checkHealItemCollision = (ball) => {
                     const dist = Math.hypot(ball.x - healItem.x, ball.y - healItem.y);
                     if (dist < ball.radius + healItem.radius) {
+                        window.trackBingoEvent?.('healItem', 1);
                         const healAmount = 20;
                         ball.hp = Math.min(ball.maxHp, ball.hp + healAmount);
                         triggerAnnouncement(`💊 【${ball.name}】が回復アイテムを獲得！ HP +${healAmount}`, '#2ee6a6', true);
@@ -2791,6 +2812,7 @@
 
             if (winner !== null && !resultProcessed) {
                 resultProcessed = true;
+                window.trackBingoEvents?.({match:1,decisive:winner === 'draw' ? 0 : 1,aiWin:isAiMode && winner === 'left' ? 1 : 0,leftWin:winner === 'left' ? 1 : 0});
                 
                 let titleText = "";
                 let subStatsText = "";
@@ -2869,6 +2891,20 @@
         }
 
         loop();
+    
+        const BINGO_LINE_REWARD=15,BINGO_STORAGE_KEY='bizenBingoEventV1';
+        const BINGO_MISSIONS=[['bingo-play-1','match',1,'🎮','初陣','試合を1回完了する'],['bingo-bet-1','bet',1,'🎯','勝敗予想','観戦モードでベットする'],['bingo-auto-1','auto',1,'👀','観戦開始','観戦モードを開始する'],['bingo-manual-1','manual',1,'🕹️','2P対戦','自操作モードを開始する'],['bingo-ai-1','ai',1,'🤖','AI対戦','AI対戦モードを開始する'],['bingo-decisive-1','decisive',1,'⚔️','決着','勝敗がついた試合を完了する'],['bingo-ai-win-1','aiWin',1,'🏆','AI撃破','AI対戦でLEFTとして勝利する'],['bingo-left-win-1','leftWin',1,'🔵','LEFT勝利','LEFTで1回勝利する'],['bingo-play-5','match',5,'🔁','連戦','試合を5回完了する'],['bingo-collision-3','collision',3,'💥','激突','ボール同士を3回衝突させる'],['bingo-damage-30','damage',30,'⚡','猛攻','合計30ダメージ与える'],['bingo-chest-1','chest',1,'🎁','宝箱発見','金色の宝箱を1回獲得する'],['bingo-heal-item-1','healItem',1,'💊','回復','回復アイテムを1回獲得する'],['bingo-trait-1','trait',1,'✨','能力獲得','特性を1つ獲得する'],['bingo-rare-trait-1','rareTrait',1,'🌟','レア能力','レア特性を1つ獲得する'],['bingo-gun-1','gunTrait',1,'🔫','銃','「銃」を獲得する'],['bingo-saw-1','sawTrait',1,'⚙️','鋸','「鋸」を獲得する'],['bingo-mirror-1','mirrorTrait',1,'🪞','鏡','「鏡」を獲得する'],['bingo-heal-trait-1','healTrait',1,'💖','癒','「癒」を獲得する'],['bingo-trap-1','trapTrait',1,'🪤','罠','「罠」を獲得する'],['bingo-suction-1','suctionTrait',1,'🧲','吸','「吸」を獲得する'],['bingo-reverse-1','reverseTrait',1,'🔀','逆','「逆」を獲得する'],['bingo-spike-2','spikeTrait',2,'🌵','棘強化','「棘」を2回獲得する'],['bingo-gacha-1','gacha',1,'🎰','ガチャ初回','ガチャを1回引く'],['bingo-spend-beans-25','beansSpent',25,'🫘','豆消費','累計25豆を消費する']].map(x=>({id:x[0],counter:x[1],target:x[2],icon:x[3],title:x[4],desc:x[5]}));
+        let bingoState=(()=>{try{return Object.assign({counters:{},cleared:[],claimedLines:[],earnedBeans:0,completed:false,rewardType:null},JSON.parse(localStorage.getItem(BINGO_STORAGE_KEY)||'{}'))}catch(e){return {counters:{},cleared:[],claimedLines:[],earnedBeans:0,completed:false,rewardType:null}}})();
+        let bingoCounters=bingoState.counters||{},bingoClearedSet=new Set(bingoState.cleared||[]),bingoClaimedLineSet=new Set(bingoState.claimedLines||[]),bingoEarnedBeans=+bingoState.earnedBeans||0,bingoCompleted=!!bingoState.completed; window.bingoSuppressBeanTracking=false;
+        function saveBingoState(){bingoState.counters=bingoCounters;bingoState.cleared=[...bingoClearedSet];bingoState.claimedLines=[...bingoClaimedLineSet];bingoState.earnedBeans=bingoEarnedBeans;bingoState.completed=bingoCompleted;localStorage.setItem(BINGO_STORAGE_KEY,JSON.stringify(bingoState))}
+        function getBingoCounterValue(c){return +bingoCounters[c]||0} function trackBingoEvent(c,a=1){a=+a||0;if(a<=0)return;bingoCounters[c]=getBingoCounterValue(c)+a;saveBingoState();evaluateBingoMissions()} window.trackBingoEvent=trackBingoEvent; function trackBingoEvents(es){for(const[c,a]of Object.entries(es)){a=+a||0;if(a>0)bingoCounters[c]=getBingoCounterValue(c)+a}saveBingoState();evaluateBingoMissions()} window.trackBingoEvents=trackBingoEvents;
+        function trackBingoTrait(t){if(!t)return;const e={trait:1};if(t.isRare)e.rareTrait=1;const m={gun:'gunTrait',saw:'sawTrait',spike:'spikeTrait',mirror:'mirrorTrait',heal:'healTrait',reverse:'reverseTrait',suction:'suctionTrait',trap:'trapTrait'};if(m[t.id])e[m[t.id]]=1;trackBingoEvents(e)} window.trackBingoTrait=trackBingoTrait;
+        function lines(){const a=[];for(let r=0;r<5;r++)a.push({key:'row-'+r,cells:[0,1,2,3,4].map(c=>r*5+c),label:`横ライン ${r+1}`});for(let c=0;c<5;c++)a.push({key:'col-'+c,cells:[0,1,2,3,4].map(r=>r*5+c),label:`縦ライン ${c+1}`});a.push({key:'diag-main',cells:[0,6,12,18,24],label:'斜めライン 1'},{key:'diag-sub',cells:[4,8,12,16,20],label:'斜めライン 2'});return a}
+        function evaluateBingoMissions(){const now=BINGO_MISSIONS.filter(m=>getBingoCounterValue(m.counter)>=m.target).map(m=>m.id);now.forEach(id=>bingoClearedSet.add(id));for(const l of lines())if(!bingoClaimedLineSet.has(l.key)&&l.cells.every(i=>bingoClearedSet.has(BINGO_MISSIONS[i].id))){bingoClaimedLineSet.add(l.key);bingoEarnedBeans+=BINGO_LINE_REWARD;window.bingoSuppressBeanTracking=true;try{addBeans(BINGO_LINE_REWARD)}finally{window.bingoSuppressBeanTracking=false}}if(bingoClearedSet.size===25&&!bingoCompleted){bingoCompleted=true;try{ownedSkins.add('camouflage');saveOwnedSet('ownedSkins',ownedSkins)}catch(e){}try{ownedTattoos.add('😇');saveOwnedSet('ownedTattoos',ownedTattoos)}catch(e){}}saveBingoState();renderBingoCard()}
+        function renderBingoCard(){const card=document.getElementById('bingo-card'),sum=document.getElementById('bingo-summary');if(!card||!sum)return;card.innerHTML='';BINGO_MISSIONS.forEach((m,i)=>{const p=Math.min(getBingoCounterValue(m.counter),m.target),cell=document.createElement('div');cell.className='bingo-cell'+(bingoClearedSet.has(m.id)?' flipped cleared':'');cell.innerHTML=`<div class="bingo-cell-inner"><div class="bingo-face bingo-front"><div class="bingo-front-mark">${i%2?'備中':'備前'}</div><div class="bingo-front-symbol">?</div></div><div class="bingo-face bingo-back"><div class="bingo-mission-icon">${m.icon}</div><div class="bingo-mission-title">${m.title}</div><div class="bingo-mission-desc">${m.desc}</div><div class="bingo-progress"><span style="width:${Math.min(100,p/m.target*100)}%"></span></div><div class="bingo-progress-text">${Math.floor(p)} / ${m.target}</div></div></div>`;card.appendChild(cell)});sum.innerHTML=`<div class="bingo-stat"><span>ビンゴ達成</span><b>${bingoClaimedLineSet.size} / 12ライン</b></div><div class="bingo-stat"><span>イベント報酬</span><b>+${bingoEarnedBeans}🫘</b></div><div class="bingo-stat"><span>現在の所持豆</span><b>${beans}🫘</b></div><div class="bingo-stat"><span>1マス開放</span><b>${bingoClearedSet.size} / 25マス</b></div><div class="bingo-complete-wrap"><div class="bingo-complete-label"><span>完全クリアまで</span><b>${bingoClearedSet.size} / 25</b></div><div class="bingo-complete-bar"><span style="width:${bingoClearedSet.size/25*100}%"></span></div></div>`}
+        function setSkinElementBackground(el,id){el.style.backgroundColor=id==='camouflage'?'#3f4c28':resolveSkinColor(id)} window.setSkinElementBackground=setSkinElementBackground; function getBallSkinFillStyle(ctx,id){return resolveSkinColor(id)} window.getBallSkinFillStyle=getBallSkinFillStyle;
+        function initializeBingoEvent(){document.getElementById('btn-open-bingo')?.addEventListener('click',()=>{document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('bingo-screen')?.classList.add('active');evaluateBingoMissions()});document.getElementById('btn-close-bingo')?.addEventListener('click',()=>{document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('home-screen')?.classList.add('active')});document.getElementById('btn-bingo-reward-close')?.addEventListener('click',()=>document.getElementById('bingo-reward-overlay')?.classList.remove('active'));[['btn-start-auto','auto'],['btn-start-manual','manual'],['btn-ai-hard','ai'],['btn-ai-mid','ai'],['btn-ai-easy','ai'],['btn-free-tattoo-gacha','gacha']].forEach(([id,c])=>document.getElementById(id)?.addEventListener('click',()=>trackBingoEvent(c,1)));evaluateBingoMissions()}
+        initializeBingoEvent();
     </script>
 </body>
 </html>
