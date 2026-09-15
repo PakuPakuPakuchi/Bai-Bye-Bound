@@ -340,6 +340,10 @@
             z-index: 999;
         }
         .gacha-result-overlay.active { display: flex; }
+        /* ===== リリース記念：初回限定豆配布オーバーレイ ===== */
+        #release-bonus-overlay { z-index: 90; }
+        #release-bonus-overlay .gacha-result-card { border: 3px solid transparent; }
+        .release-bonus-title { font-size: 1.05rem; margin-bottom: 10px; }
         .gacha-result-card {
             background: #161616;
             border-radius: 20px;
@@ -575,6 +579,17 @@
         </div>
     </div>
 
+    <!-- リリース記念！初回限定5連分の豆配布オーバーレイ -->
+    <div id="release-bonus-overlay" class="gacha-result-overlay">
+        <div class="gacha-result-card rank-god">
+            <div class="gacha-result-rank rank-text-ace release-bonus-title">🎊 リリース記念キャンペーン 🎊</div>
+            <div class="gacha-result-visual">🫘</div>
+            <div class="gacha-result-name rainbow-text">豆 125🫘 プレゼント！</div>
+            <div class="gacha-result-note">初回限定！ガチャ5連分の豆を全プレイヤーに配布中<br>スキン・タトゥーガチャ（25🫘）が5回分まわせます</div>
+            <button id="btn-release-bonus-claim" class="main-btn" style="width: auto; padding: 10px 30px;">受け取る</button>
+        </div>
+    </div>
+
     <div id="tutorial-screen" class="screen">
         <h2>📖 遊び方ガイド</h2>
         <div class="tutorial-box">
@@ -615,6 +630,7 @@
                 <h3>🎰 ガチャシステム</h3>
                 <p>試合で貯めた豆(🫘)は、ホーム画面の「🎰 ガチャを回す」からスキン・タトゥーのガチャに使えます（1回25🫘）。</p>
                 <p><b>🫘 豆の入手方法</b>：観戦モードで予想的中(+1) ／ 自操作モード終了(+3、引き分けでも+1) ／ AI対戦に勝利(難易度に応じて+1〜+4)</p>
+                <p>🎊 <b>リリース記念キャンペーン</b>：初回起動時に豆125🫘（ガチャ5連分）をプレゼント！（お一人様1回限り）</p>
                 <p><b>🎨 スキンピックアップ</b>：ワンポイント(通常色) 70% ／ エース(金・銀・白) 29% ／ ゴッド(レインボー✨) 1%</p>
                 <p><b>🈺 タトゥーピックアップ</b>：ワンポイント(漢字) 70% ／ エース(龍・剣・魂・凛・轟) 29% ／ ゴッド(🔥🔞⭐) 1%</p>
                 <p>入手したスキン・タトゥーは「スキン・タトゥー変更」画面でLEFT/RIGHTそれぞれ自由に装備できます。初回限定でタトゥーの無料ガチャも1回引けます。</p>
@@ -1015,6 +1031,25 @@
         }
 
         updateBeanDisplays();
+
+        // ===== リリース記念！初回限定5連分の豆配布（125🫘） =====
+        const RELEASE_BONUS_BEANS = GACHA_COST * 5; // ガチャ1回25🫘 × 5連分 = 125🫘
+        let releaseBonusClaimed = localStorage.getItem('releaseBonusClaimed') === 'true';
+        const releaseBonusOverlay = document.getElementById('release-bonus-overlay');
+        function showReleaseBonusOverlay() {
+            if (releaseBonusClaimed) return;
+            releaseBonusOverlay.classList.add('active');
+        }
+        function claimReleaseBonus() {
+            if (releaseBonusClaimed) return; // 二重受け取り防止
+            releaseBonusClaimed = true;
+            localStorage.setItem('releaseBonusClaimed', 'true');
+            addBeans(RELEASE_BONUS_BEANS);
+            updateBeanDisplays();
+            releaseBonusOverlay.classList.remove('active');
+        }
+        document.getElementById('btn-release-bonus-claim').onclick = claimReleaseBonus;
+        showReleaseBonusOverlay();
 
         document.getElementById('btn-start-auto').onclick = () => {
             isManualMode = false;
