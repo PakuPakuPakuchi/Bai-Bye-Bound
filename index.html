@@ -1717,7 +1717,7 @@
                 this.x = x;
                 this.y = y;
                 const angle = Math.random() * Math.PI * 2;
-                const speed = 4.4;
+                const speed = 4.4 * ((!isManualMode && !isAiMode) ? 1.5 : 1.0);
                 this.vx = Math.cos(angle) * speed;
                 this.vy = Math.sin(angle) * speed;
                 this.radius = 18 * 0.7;
@@ -1788,10 +1788,11 @@
                     this.healTimer = 0;
                 }
 
-                let currentSpeed = 4.4;
+                const betSpeedMultiplier = (!isManualMode && !isAiMode) ? 1.5 : 1.0;
+                let currentSpeed = 4.4 * betSpeedMultiplier;
                 if (this.weightDurationTimer > 0) {
                     this.weightDurationTimer--;
-                    currentSpeed = 1.6; 
+                    currentSpeed = 1.6 * betSpeedMultiplier; 
                 }
 
                 let inputX = 0;
