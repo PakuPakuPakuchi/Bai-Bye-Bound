@@ -1817,25 +1817,43 @@
             }
         }
 
-        function spawnChest() {
+        // 障害物と重ならないフィールド上のランダム座標を探す共通関数。
+        // 一定回数リトライしても見つからない場合は、最後に得た座標をそのまま返す（無限ループ防止）。
+        function getSafeFieldPosition(itemRadius) {
             const maxR = containerRadius - 50;
-            const r = Math.random() * maxR;
-            const angle = Math.random() * Math.PI * 2;
+            const margin = 8; // 障害物との間に少し余白を持たせる
+            let x, y, attempts = 0;
+            do {
+                const r = Math.random() * maxR;
+                const angle = Math.random() * Math.PI * 2;
+                x = centerX + Math.cos(angle) * r;
+                y = centerY + Math.sin(angle) * r;
+                attempts++;
+            } while (
+                attempts < 60 &&
+                obstacles.some(obs => {
+                    const dx = x - obs.x, dy = y - obs.y;
+                    return Math.sqrt(dx * dx + dy * dy) < obs.radius + itemRadius + margin;
+                })
+            );
+            return { x, y };
+        }
+
+        function spawnChest() {
+            const pos = getSafeFieldPosition(14);
             chest = {
-                x: centerX + Math.cos(angle) * r,
-                y: centerY + Math.sin(angle) * r,
+                x: pos.x,
+                y: pos.y,
                 radius: 14
             };
             triggerAnnouncement("🎁 フィールドに金色の宝箱が出現！", "#ffd700", false);
         }
 
         function spawnHealItem() {
-            const maxR = containerRadius - 50;
-            const r = Math.random() * maxR;
-            const angle = Math.random() * Math.PI * 2;
+            const pos = getSafeFieldPosition(13);
             healItem = {
-                x: centerX + Math.cos(angle) * r,
-                y: centerY + Math.sin(angle) * r,
+                x: pos.x,
+                y: pos.y,
                 radius: 13
             };
             triggerAnnouncement("💊 フィールドに回復アイテムが出現！", "#2ee6a6", false);
@@ -1847,11 +1865,9 @@
                 tx = x;
                 ty = y;
             } else {
-                const maxR = containerRadius - 50;
-                const r = Math.random() * maxR;
-                const angle = Math.random() * Math.PI * 2;
-                tx = centerX + Math.cos(angle) * r;
-                ty = centerY + Math.sin(angle) * r;
+                const pos = getSafeFieldPosition(12);
+                tx = pos.x;
+                ty = pos.y;
             }
             traps.push({
                 x: tx,
