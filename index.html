@@ -166,6 +166,54 @@
             color: #ccc;
         }
 
+        .tutorial-box {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 16px 24px;
+            width: 560px;
+            max-width: 90vw;
+            max-height: 62vh;
+            overflow-y: auto;
+            text-align: left;
+        }
+        .tutorial-section {
+            margin-bottom: 18px;
+        }
+        .tutorial-section:last-child {
+            margin-bottom: 0;
+        }
+        .tutorial-section h3 {
+            font-size: 1.05rem;
+            margin: 0 0 8px 0;
+            color: #ffd700;
+            border-bottom: 1px solid #333;
+            padding-bottom: 4px;
+        }
+        .tutorial-section p {
+            font-size: 0.85rem;
+            color: #ddd;
+            line-height: 1.5;
+            margin: 0 0 8px 0;
+        }
+        .tutorial-section .trait-item {
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+        }
+        .key-badge {
+            display: inline-block;
+            min-width: 22px;
+            text-align: center;
+            background: #222;
+            border: 1px solid #666;
+            border-radius: 5px;
+            padding: 2px 7px;
+            margin-right: 4px;
+            font-family: monospace;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
         .skin-selection {
             display: flex;
             gap: 40px;
@@ -436,6 +484,7 @@
         <h1>倍々バウンド</h1>
         <div class="nickname-greeting">ようこそ、<span id="home-nickname">プレイヤー</span>さん<button id="btn-change-nickname">変更</button></div>
         <div class="stats">🫘 所持豆: <span id="home-bean-count">0</span></div>
+        <button id="btn-open-tutorial" class="main-btn" style="background: linear-gradient(45deg, #0f5c46, #2ee6a6); border-color: #2ee6a6;">📖 遊び方・チュートリアル</button>
         <button id="btn-start-auto" class="main-btn">観戦モード (ベット)</button>
         <button id="btn-start-manual" class="main-btn">自操作モード (2P対戦)</button>
         <button id="btn-open-ai" class="main-btn">🤖 AI対戦モード (一人用)</button>
@@ -524,6 +573,54 @@
             <div id="gacha-result-note" class="gacha-result-note"></div>
             <button id="btn-gacha-result-close" class="main-btn" style="width: auto; padding: 8px 24px;">閉じる</button>
         </div>
+    </div>
+
+    <div id="tutorial-screen" class="screen">
+        <h2>📖 遊び方ガイド</h2>
+        <div class="tutorial-box">
+            <div class="tutorial-section">
+                <h3>🎮 操作方法</h3>
+                <p>試合が始まるとボールは自動で前進し続けます。キーを押している方向へ少しずつ向きを変えられます。</p>
+                <p><b>LEFT（左のボール）</b>：<span class="key-badge">W</span><span class="key-badge">A</span><span class="key-badge">S</span><span class="key-badge">D</span></p>
+                <p><b>RIGHT（右のボール／自操作モードの2Pのみ）</b>：<span class="key-badge">I</span><span class="key-badge">J</span><span class="key-badge">K</span><span class="key-badge">L</span></p>
+                <p>※「🔀 逆」の特性を受けると、一定時間だけ自分のキー割り当てがランダムに入れ替わってしまいます。</p>
+            </div>
+
+            <div class="tutorial-section">
+                <h3>🕹️ ゲームモード</h3>
+                <p><b>観戦モード（ベット）</b>：自分では操作せず、LEFTとRIGHTどちらが勝つかを予想してベットし、試合を観戦します。的中すると🫘豆+1もらえます。</p>
+                <p><b>自操作モード（2P対戦）</b>：1PがLEFT（WASD）、2PがRIGHT（IJKL）を操作して直接対戦します。試合終了で🫘豆+3、引き分けでも+1もらえます。</p>
+                <p><b>🤖 AI対戦モード（一人用）</b>：あなたはLEFT（WASD）を操作し、CPU（RIGHT）と対戦します。難易度は3段階あり、強いCPUに勝つほど豆の報酬が多くなります（下:+1 / 中:+2 / 上:+4）。</p>
+            </div>
+
+            <div class="tutorial-section">
+                <h3>✨ 特性・能力一覧</h3>
+                <p>試合中、ボール同士がぶつかったり、フィールドに出現する🎁金の宝箱を取ると「特性ルーレット」が発生し、ランダムで特性を1つ獲得します。同じ特性を重ねて取るとさらに強化されるものもあります。</p>
+                <div class="trait-item">🔫 <b>銃</b>：一定間隔で、端まで届くロング・黄金レーザーを3方向に発射する。</div>
+                <div class="trait-item">⚙️ <b>鋸</b>：定期的に防御を展開し、展開中に接触した相手へ大ダメージを与える。展開中は毒・重錘・逆などの効果も防げる。</div>
+                <div class="trait-item">☣️ <b>毒</b>：接触した相手に持続ダメージを与える（相手が鋸を展開中は無効）。</div>
+                <div class="trait-item">⚓ <b>錘</b>：接触した相手の動きを一定時間重くする（相手が鋸を展開中は無効）。</div>
+                <div class="trait-item">🌵 <b>棘</b>：体の周りにトゲが生え、触れた相手にダメージ。獲得するたびに本数が増えて強化される（累積あり）。</div>
+                <div class="trait-item">🪞 <b>鏡</b>：自分の分身（クローン）を生み出す。クローンが相手にぶつかると各種効果を発動し、一定時間後に再出現する。</div>
+                <div class="trait-item">💖 <b>癒</b>：HPが50以下のとき、約4秒ごとに残りHPの2%を回復する。</div>
+                <div class="trait-item">🔀 <b>逆</b>：接触した相手の操作キーを一定時間ランダムに入れ替える（自身にクールタイムあり）。</div>
+                <div class="trait-item">🧲 <b>吸</b>：一定時間だけ自分が磁場となり、金の宝箱や回復アイテムを引き寄せる。</div>
+                <div class="trait-item">🪤 <b>罠</b>：フィールドに罠を設置し、踏んだ相手にダメージを与える。発動すると新しい罠が再設置される。</div>
+                <div class="trait-item">❌ <b>ざんねん</b>：効果なし（ハズレ）。</div>
+                <div class="trait-item">💊 <b>回復アイテム</b>：特性ではなく、フィールドに定期的に出現。取得したボールのHPが回復する。</div>
+                <div class="trait-item">🎁 <b>金の宝箱</b>：フィールドに出現し、取得すると必ず特性ルーレット（ハズレなし）が発生する。</div>
+            </div>
+
+            <div class="tutorial-section">
+                <h3>🎰 ガチャシステム</h3>
+                <p>試合で貯めた豆(🫘)は、ホーム画面の「🎰 ガチャを回す」からスキン・タトゥーのガチャに使えます（1回25🫘）。</p>
+                <p><b>🫘 豆の入手方法</b>：観戦モードで予想的中(+1) ／ 自操作モード終了(+3、引き分けでも+1) ／ AI対戦に勝利(難易度に応じて+1〜+4)</p>
+                <p><b>🎨 スキンピックアップ</b>：ワンポイント(通常色) 70% ／ エース(金・銀・白) 29% ／ ゴッド(レインボー✨) 1%</p>
+                <p><b>🈺 タトゥーピックアップ</b>：ワンポイント(漢字) 70% ／ エース(龍・剣・魂・凛・轟) 29% ／ ゴッド(🔥🔞⭐) 1%</p>
+                <p>入手したスキン・タトゥーは「スキン・タトゥー変更」画面でLEFT/RIGHTそれぞれ自由に装備できます。初回限定でタトゥーの無料ガチャも1回引けます。</p>
+            </div>
+        </div>
+        <button id="btn-close-tutorial" class="main-btn" style="width: auto; padding: 10px 30px; font-size: 1.2rem; margin-top: 10px;">ホームに戻る</button>
     </div>
 
     <div id="ai-screen" class="screen">
@@ -937,6 +1034,14 @@
             gameStarted = true;
             document.querySelector('.btn-group').style.display = 'none';
             statusPanel.innerText = "バトル開始！ 1P(LEFT): WASD / 2P(RIGHT): IJKL";
+        };
+
+        document.getElementById('btn-open-tutorial').onclick = () => {
+            showScreen('tutorial-screen');
+        };
+
+        document.getElementById('btn-close-tutorial').onclick = () => {
+            showScreen('home-screen');
         };
 
         document.getElementById('btn-open-skin').onclick = () => {
