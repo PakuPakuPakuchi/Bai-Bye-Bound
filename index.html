@@ -483,6 +483,33 @@
             color: #ffd700;
         }
 
+        /* ===== 称号(実績称号)設定 ===== */
+        .title-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .title-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 10px;
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .title-item:hover:not(.locked) { border-color: #ffd700; }
+        .title-item.selected { border-color: #ffd700; background: #2a2410; box-shadow: 0 0 10px rgba(255,215,0,0.4); }
+        .title-item.locked { cursor: not-allowed; opacity: 0.45; }
+        .title-item-main { display: flex; flex-direction: column; gap: 2px; }
+        .title-item-name { font-weight: bold; font-size: 0.95rem; }
+        .title-item-desc { font-size: 0.7rem; color: #999; }
+        .title-item-badge { font-size: 0.7rem; color: #ffd700; white-space: nowrap; }
+        .title-item.locked .title-item-badge { color: #888; }
+
         /* ===== 迷彩柄(ゴッドランク限定スキン) ===== */
         .camo-bg {
             background: repeating-linear-gradient(135deg, #4b5320 0px, #4b5320 18px, #6b8e23 18px, #6b8e23 36px, #3b3b2e 36px, #3b3b2e 54px, #556b2f 54px, #556b2f 72px) !important;
@@ -801,6 +828,11 @@
                     <input type="range" id="ballSpeedSlider" min="1" max="5" step="1" value="3">
                     <div id="ballSpeedLabel">普通</div>
                 </div>
+            </div>
+            <div class="settings-section">
+                <h3>🏆 称号</h3>
+                <div style="font-size: 0.7rem; color: #888; margin-bottom: 10px; text-align: center;">条件を達成すると獲得できます。装備した称号は試合中LEFT/RIGHTの表示部分に反映されます。</div>
+                <div id="title-settings-list" class="title-list"></div>
             </div>
         </div>
         <button id="btn-close-settings" class="main-btn" style="width: auto; padding: 10px 30px; font-size: 1.2rem;">ホームに戻る</button>
@@ -1551,8 +1583,75 @@
             localStorage.setItem('ballSpeedLevel', ballSpeedLevel);
         };
 
+        // === 称号(実績称号) ===
+        const TITLES = [
+            { id: 'frenemy',         name: 'フレネミー',       desc: '自操作モード(2P対戦)を通算30回プレイする',                                  check: () => bingoStats.manualMatches >= 30 },
+            { id: 'veteran',         name: '百戦錬磨',         desc: '全モード合計で試合を通算100回プレイする',                                    check: () => bingoStats.totalMatches >= 100 },
+            { id: 'gambler',         name: '賭博の申し子',     desc: '観戦モードで予想を通算30回的中させる',                                       check: () => bingoStats.betCorrect >= 30 },
+            { id: 'ace_slayer',      name: '鬼強CPUキラー',    desc: 'AI対戦「上」に通算20回勝利する',                                             check: () => bingoStats.aiWinHard >= 20 },
+            { id: 'trait_master',    name: '特性コンプリート', desc: '10種類の特性(銃・鋸・毒・錘・棘・鏡・癒・逆・吸・罠)を全て1回以上獲得する',       check: () => Object.values(bingoStats.traits).every(v => v >= 1) },
+            { id: 'treasure_hunter', name: '宝箱ハンター',     desc: '金の宝箱を通算50回開ける',                                                   check: () => bingoStats.chestOpened >= 50 },
+            { id: 'healer',          name: '不死身の回復体質', desc: '回復アイテムを通算50回獲得する',                                             check: () => bingoStats.healCollected >= 50 },
+            { id: 'bingo_champion',  name: '備前備中の覇者',   desc: '「備前 備中 BINGO！」を完全クリアする',                                       check: () => bingoFullClearAwarded }
+        ];
+
+        let equippedTitle = localStorage.getItem('equippedTitle') || '';
+
+        function getEquippedTitleName() {
+            if (!equippedTitle) return '';
+            const t = TITLES.find(t => t.id === equippedTitle);
+            return (t && t.check()) ? t.name : '';
+        }
+
+        function equipTitle(id) {
+            if (id) {
+                const t = TITLES.find(t => t.id === id);
+                if (!t || !t.check()) return;
+            }
+            equippedTitle = id;
+            localStorage.setItem('equippedTitle', equippedTitle);
+            renderTitleSettings();
+            applyColorsToUI();
+        }
+
+        function renderTitleSettings() {
+            const list = document.getElementById('title-settings-list');
+            list.innerHTML = '';
+
+            const noneItem = document.createElement('div');
+            noneItem.className = 'title-item' + (equippedTitle === '' ? ' selected' : '');
+            noneItem.innerHTML = `
+                <div class="title-item-main">
+                    <div class="title-item-name">称号なし</div>
+                    <div class="title-item-desc">表示をLEFT / RIGHTのままにする</div>
+                </div>
+                <div class="title-item-badge">${equippedTitle === '' ? '✅ 装備中' : ''}</div>
+            `;
+            noneItem.onclick = () => equipTitle('');
+            list.appendChild(noneItem);
+
+            TITLES.forEach(t => {
+                const unlocked = t.check();
+                const isSelected = equippedTitle === t.id;
+                const item = document.createElement('div');
+                item.className = 'title-item' + (unlocked ? '' : ' locked') + (isSelected ? ' selected' : '');
+                item.innerHTML = `
+                    <div class="title-item-main">
+                        <div class="title-item-name">${unlocked ? '🏆 ' : '🔒 '}${t.name}</div>
+                        <div class="title-item-desc">${t.desc}</div>
+                    </div>
+                    <div class="title-item-badge">${isSelected ? '✅ 装備中' : (unlocked ? '装備する' : '未獲得')}</div>
+                `;
+                if (unlocked) {
+                    item.onclick = () => equipTitle(t.id);
+                }
+                list.appendChild(item);
+            });
+        }
+
         // === 設定画面の開閉 ===
         document.getElementById('btn-open-settings').onclick = () => {
+            renderTitleSettings();
             showScreen('settings-screen');
         };
         document.getElementById('btn-close-settings').onclick = () => {
@@ -1948,6 +2047,9 @@
         }
 
         function applyColorsToUI() {
+            const equippedTitleName = getEquippedTitleName();
+            document.getElementById('leftName').innerText = equippedTitleName || 'LEFT';
+            document.getElementById('rightName').innerText = equippedTitleName || 'RIGHT';
             applySkinToElements(currentLeftSkin, document.getElementById('leftName'), document.getElementById('hpLeftText'), leftBarFill, btnLeft);
             applySkinToElements(currentRightSkin, document.getElementById('rightName'), document.getElementById('hpRightText'), rightBarFill, btnRight);
         }
@@ -3420,7 +3522,7 @@
                         subStatsText = `引き分けとなりました (🫘 +1 所持豆: ${beans})`;
                     }
                 } else {
-                    const winName = winner === 'left' ? 'LEFT' : 'RIGHT';
+                    const winName = getEquippedTitleName() || (winner === 'left' ? 'LEFT' : 'RIGHT');
                     const winColor = winner === 'left' ? currentLeftSkin : currentRightSkin;
                     const winIsRainbow = (winColor === 'rainbow');
                     const winIsCamo = (winColor === 'camo');
