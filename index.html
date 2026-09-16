@@ -484,6 +484,22 @@
         }
 
         /* ===== 称号(実績称号)設定 ===== */
+        .title-selection {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .title-box {
+            width: 320px;
+            max-width: 100%;
+        }
+        .title-box h4 {
+            margin: 0 0 8px;
+            font-size: 0.9rem;
+            color: #ffd700;
+            text-align: center;
+        }
         .title-list {
             display: flex;
             flex-direction: column;
@@ -831,8 +847,17 @@
             </div>
             <div class="settings-section">
                 <h3>🏆 称号</h3>
-                <div style="font-size: 0.7rem; color: #888; margin-bottom: 10px; text-align: center;">条件を達成すると獲得でき、初回獲得時に🫘豆+100がもらえます。装備した称号は試合中LEFT/RIGHTの表示部分に反映されます。</div>
-                <div id="title-settings-list" class="title-list"></div>
+                <div style="font-size: 0.7rem; color: #888; margin-bottom: 10px; text-align: center;">条件を達成すると獲得でき、初回獲得時に🫘豆+100がもらえます。LEFT/RIGHTそれぞれ別々の称号を装備できます。</div>
+                <div class="title-selection">
+                    <div class="title-box">
+                        <h4>LEFT</h4>
+                        <div id="title-settings-list-left" class="title-list"></div>
+                    </div>
+                    <div class="title-box">
+                        <h4>RIGHT</h4>
+                        <div id="title-settings-list-right" class="title-list"></div>
+                    </div>
+                </div>
             </div>
         </div>
         <button id="btn-close-settings" class="main-btn" style="width: auto; padding: 10px 30px; font-size: 1.2rem;">ホームに戻る</button>
@@ -1606,7 +1631,8 @@
             { id: 'bingo_champion',  name: '備前備中の覇者',   desc: '「備前 備中 BINGO！」を完全クリアする',                                       check: () => bingoFullClearAwarded }
         ];
 
-        let equippedTitle = localStorage.getItem('equippedTitle') || '';
+        let equippedTitleLeft = localStorage.getItem('equippedTitleLeft') || localStorage.getItem('equippedTitle') || '';
+        let equippedTitleRight = localStorage.getItem('equippedTitleRight') || localStorage.getItem('equippedTitle') || '';
 
         let titleRewardsGiven = new Set();
         try {
@@ -1641,25 +1667,32 @@
 
         checkTitleUnlocks();
 
-        function getEquippedTitleName() {
+        function getEquippedTitleName(side) {
+            const equippedTitle = side === 'right' ? equippedTitleRight : equippedTitleLeft;
             if (!equippedTitle) return '';
             const t = TITLES.find(t => t.id === equippedTitle);
             return (t && t.check()) ? t.name : '';
         }
 
-        function equipTitle(id) {
+        function equipTitle(side, id) {
             if (id) {
                 const t = TITLES.find(t => t.id === id);
                 if (!t || !t.check()) return;
             }
-            equippedTitle = id;
-            localStorage.setItem('equippedTitle', equippedTitle);
+            if (side === 'right') {
+                equippedTitleRight = id;
+                localStorage.setItem('equippedTitleRight', equippedTitleRight);
+            } else {
+                equippedTitleLeft = id;
+                localStorage.setItem('equippedTitleLeft', equippedTitleLeft);
+            }
             renderTitleSettings();
             applyColorsToUI();
         }
 
-        function renderTitleSettings() {
-            const list = document.getElementById('title-settings-list');
+        function renderTitleSettingsForSide(side) {
+            const equippedTitle = side === 'right' ? equippedTitleRight : equippedTitleLeft;
+            const list = document.getElementById(side === 'right' ? 'title-settings-list-right' : 'title-settings-list-left');
             list.innerHTML = '';
 
             const noneItem = document.createElement('div');
@@ -1667,11 +1700,11 @@
             noneItem.innerHTML = `
                 <div class="title-item-main">
                     <div class="title-item-name">称号なし</div>
-                    <div class="title-item-desc">表示をLEFT / RIGHTのままにする</div>
+                    <div class="title-item-desc">表示を${side === 'right' ? 'RIGHT' : 'LEFT'}のままにする</div>
                 </div>
                 <div class="title-item-badge">${equippedTitle === '' ? '✅ 装備中' : ''}</div>
             `;
-            noneItem.onclick = () => equipTitle('');
+            noneItem.onclick = () => equipTitle(side, '');
             list.appendChild(noneItem);
 
             TITLES.forEach(t => {
@@ -1687,10 +1720,15 @@
                     <div class="title-item-badge">${isSelected ? '✅ 装備中' : (unlocked ? '装備する' : '未獲得')}</div>
                 `;
                 if (unlocked) {
-                    item.onclick = () => equipTitle(t.id);
+                    item.onclick = () => equipTitle(side, t.id);
                 }
                 list.appendChild(item);
             });
+        }
+
+        function renderTitleSettings() {
+            renderTitleSettingsForSide('left');
+            renderTitleSettingsForSide('right');
         }
 
         // === 設定画面の開閉 ===
@@ -2091,9 +2129,8 @@
         }
 
         function applyColorsToUI() {
-            const equippedTitleName = getEquippedTitleName();
-            document.getElementById('leftName').innerText = equippedTitleName || 'LEFT';
-            document.getElementById('rightName').innerText = equippedTitleName || 'RIGHT';
+            document.getElementById('leftName').innerText = getEquippedTitleName('left') || 'LEFT';
+            document.getElementById('rightName').innerText = getEquippedTitleName('right') || 'RIGHT';
             applySkinToElements(currentLeftSkin, document.getElementById('leftName'), document.getElementById('hpLeftText'), leftBarFill, btnLeft);
             applySkinToElements(currentRightSkin, document.getElementById('rightName'), document.getElementById('hpRightText'), rightBarFill, btnRight);
         }
@@ -3570,7 +3607,7 @@
                         subStatsText = `引き分けとなりました (🫘 +1 所持豆: ${beans})`;
                     }
                 } else {
-                    const winName = getEquippedTitleName() || (winner === 'left' ? 'LEFT' : 'RIGHT');
+                    const winName = getEquippedTitleName(winner) || (winner === 'left' ? 'LEFT' : 'RIGHT');
                     const winColor = winner === 'left' ? currentLeftSkin : currentRightSkin;
                     const winIsRainbow = (winColor === 'rainbow');
                     const winIsCamo = (winColor === 'camo');
