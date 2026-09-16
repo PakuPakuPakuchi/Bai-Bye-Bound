@@ -395,6 +395,94 @@
         .gacha-result-name { font-size: 1.4rem; font-weight: bold; margin-bottom: 8px; }
         .gacha-result-note { font-size: 0.85rem; color: #aaa; margin-bottom: 15px; }
 
+        /* ===== ガチャ10連結果 ===== */
+        .gacha-multi-result-card {
+            background: #161616;
+            border-radius: 20px;
+            padding: 24px 28px;
+            text-align: center;
+            max-width: 92vw;
+            max-height: 86vh;
+            overflow-y: auto;
+            animation: gachaPop 0.4s ease-out;
+            border: 3px solid #555;
+        }
+        .gacha-multi-result-title { font-size: 1.3rem; font-weight: bold; margin-bottom: 16px; color: #ffd700; }
+        .gacha-multi-result-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .gacha-multi-result-item {
+            background: #1e1e1e;
+            border-radius: 12px;
+            padding: 10px 6px;
+            border: 2px solid #555;
+            width: 110px;
+        }
+        .gacha-multi-result-item.rank-point { border-color: #888; }
+        .gacha-multi-result-item.rank-ace { border-color: #ffd700; box-shadow: 0 0 14px rgba(255,215,0,0.45); }
+        .gacha-multi-result-item.rank-god {
+            border-color: transparent;
+            background-image: linear-gradient(#1e1e1e,#1e1e1e), linear-gradient(90deg,#ff0000,#ff9900,#fffb00,#33ff00,#00fffb,#0033ff,#ff00ff,#ff0000);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            background-size: 100% 100%, 300% 100%;
+            animation: rainbow-slide 2.5s linear infinite;
+            box-shadow: 0 0 16px rgba(255,255,255,0.35);
+        }
+        .gacha-multi-result-visual {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            margin: 0 auto 8px auto;
+            border: 2px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .gacha-multi-result-name { font-size: 0.75rem; font-weight: bold; margin-bottom: 4px; word-break: break-all; }
+        .gacha-multi-result-note { font-size: 0.65rem; color: #aaa; }
+
+        /* ===== 設定画面 ===== */
+        .settings-box {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 380px;
+            max-width: 90vw;
+            margin-bottom: 20px;
+        }
+        .settings-section {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 15px;
+            padding: 16px 20px;
+        }
+        .settings-section h3 {
+            font-size: 1rem;
+            margin: 0 0 14px 0;
+            color: #ffd700;
+            text-align: center;
+        }
+        .ball-speed-control {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .ball-speed-control input[type="range"] {
+            width: 100%;
+            accent-color: #ffd700;
+        }
+        #ballSpeedLabel {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
         /* ===== 迷彩柄(ゴッドランク限定スキン) ===== */
         .camo-bg {
             background: repeating-linear-gradient(135deg, #4b5320 0px, #4b5320 18px, #6b8e23 18px, #6b8e23 36px, #3b3b2e 36px, #3b3b2e 54px, #556b2f 54px, #556b2f 72px) !important;
@@ -603,13 +691,8 @@
         <button id="btn-open-skin" class="main-btn">スキン・タトゥー変更</button>
         <button id="btn-open-gacha" class="main-btn">🎰 ガチャを回す (25🫘)</button>
         <button id="btn-free-tattoo-gacha" class="main-btn" style="display:none; background: linear-gradient(45deg, #7B1173, #E03C8A);">🎁 初回限定タトゥー無料ガチャ！</button>
+        <button id="btn-open-settings" class="main-btn">⚙️ 設定</button>
 
-        <div class="volume-control">
-            <label for="bgmVolumeSlider">🎵 試合BGM音量</label>
-            <input type="range" id="bgmVolumeSlider" min="0" max="100" value="50">
-            <span id="bgmVolumeValue">50%</span>
-        </div>
-        
         <div class="trait-list-box">
             <h3>📖 特性・能力一覧</h3>
             <div class="trait-item">🔫 <b>銃</b>：端まで届くロング・黄金レーザーを発射する。</div>
@@ -662,7 +745,10 @@
                     エース(金・銀・白) 29%<br>
                     ゴッド(レインボー✨) 1%
                 </div>
-                <button id="btn-gacha-skin" class="main-btn" style="width: auto; padding: 10px 30px;">1回まわす (25🫘)</button>
+                <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+                    <button id="btn-gacha-skin" class="main-btn" style="width: auto; padding: 10px 20px;">1回まわす (25🫘)</button>
+                    <button id="btn-gacha-skin-x10" class="main-btn" style="width: auto; padding: 10px 20px;">10連まわす (250🫘)</button>
+                </div>
             </div>
             <div class="gacha-banner">
                 <h3>🈺 タトゥーピックアップ</h3>
@@ -671,7 +757,10 @@
                     エース(龍・剣・魂・凛・轟) 29%<br>
                     ゴッド(🔥🔞⭐) 1%
                 </div>
-                <button id="btn-gacha-tattoo" class="main-btn" style="width: auto; padding: 10px 30px;">1回まわす (25🫘)</button>
+                <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+                    <button id="btn-gacha-tattoo" class="main-btn" style="width: auto; padding: 10px 20px;">1回まわす (25🫘)</button>
+                    <button id="btn-gacha-tattoo-x10" class="main-btn" style="width: auto; padding: 10px 20px;">10連まわす (250🫘)</button>
+                </div>
             </div>
         </div>
         <button id="btn-close-gacha" class="main-btn" style="width: auto; padding: 10px 30px; font-size: 1.2rem; margin-top: 10px;">ホームに戻る</button>
@@ -685,6 +774,36 @@
             <div id="gacha-result-note" class="gacha-result-note"></div>
             <button id="btn-gacha-result-close" class="main-btn" style="width: auto; padding: 8px 24px;">閉じる</button>
         </div>
+    </div>
+
+    <div id="gacha-multi-result-overlay" class="gacha-result-overlay">
+        <div class="gacha-multi-result-card">
+            <div class="gacha-multi-result-title">🎰 10連ガチャ結果</div>
+            <div id="gacha-multi-result-grid" class="gacha-multi-result-grid"></div>
+            <button id="btn-gacha-multi-result-close" class="main-btn" style="width: auto; padding: 8px 24px;">閉じる</button>
+        </div>
+    </div>
+
+    <div id="settings-screen" class="screen">
+        <h2>⚙️ 設定</h2>
+        <div class="settings-box">
+            <div class="settings-section">
+                <h3>🎵 サウンド</h3>
+                <div class="volume-control" style="margin-top: 0;">
+                    <label for="bgmVolumeSlider">試合BGM音量</label>
+                    <input type="range" id="bgmVolumeSlider" min="0" max="100" value="50">
+                    <span id="bgmVolumeValue">50%</span>
+                </div>
+            </div>
+            <div class="settings-section">
+                <h3>⚡ ボール速度</h3>
+                <div class="ball-speed-control">
+                    <input type="range" id="ballSpeedSlider" min="1" max="5" step="1" value="3">
+                    <div id="ballSpeedLabel">普通</div>
+                </div>
+            </div>
+        </div>
+        <button id="btn-close-settings" class="main-btn" style="width: auto; padding: 10px 30px; font-size: 1.2rem;">ホームに戻る</button>
     </div>
 
     <!-- リリース記念！初回限定5連分の豆配布オーバーレイ -->
@@ -1060,6 +1179,88 @@
         };
         document.getElementById('btn-gacha-skin').onclick = () => pullGacha('skin');
         document.getElementById('btn-gacha-tattoo').onclick = () => pullGacha('tattoo');
+
+        // ===== ガチャ10連 =====
+        const GACHA_MULTI_COUNT = 10;
+
+        function pullGachaMulti(type) {
+            const totalCost = GACHA_COST * GACHA_MULTI_COUNT;
+            if (!spendBeans(totalCost)) {
+                alert(`豆が足りません（必要:${totalCost}🫘 / 所持:${beans}🫘）`);
+                return;
+            }
+            const pool = (type === 'skin') ? SKIN_POOL : TATTOO_POOL;
+            const ownedSet = (type === 'skin') ? ownedSkins : ownedTattoos;
+            const saveKey = (type === 'skin') ? 'ownedSkins' : 'ownedTattoos';
+
+            const results = [];
+            for (let i = 0; i < GACHA_MULTI_COUNT; i++) {
+                const rank = pickGachaRank();
+                const candidates = pool.filter(item => item.rank === rank);
+                const picked = candidates[Math.floor(Math.random() * candidates.length)];
+
+                const alreadyOwned = ownedSet.has(picked.id);
+                if (!alreadyOwned) {
+                    ownedSet.add(picked.id);
+                } else {
+                    addBeans(10); // 重複時は豆を一部還元
+                }
+                results.push({ picked, alreadyOwned });
+            }
+            saveOwnedSet(saveKey, ownedSet);
+
+            updateBeanDisplays();
+            renderCollectionUI();
+            showGachaMultiResult(type, results);
+        }
+
+        function showGachaMultiResult(type, results) {
+            const overlay = document.getElementById('gacha-multi-result-overlay');
+            const grid = document.getElementById('gacha-multi-result-grid');
+            grid.innerHTML = '';
+
+            results.forEach(({ picked, alreadyOwned }) => {
+                const item = document.createElement('div');
+                item.className = 'gacha-multi-result-item rank-' + picked.rank;
+
+                const visual = document.createElement('div');
+                visual.className = 'gacha-multi-result-visual';
+                const name = document.createElement('div');
+                name.className = 'gacha-multi-result-name';
+
+                if (type === 'skin') {
+                    name.innerText = picked.name;
+                    if (picked.id === 'rainbow') {
+                        visual.classList.add('rainbow-bg');
+                    } else if (picked.id === 'camo') {
+                        visual.classList.add('camo-bg');
+                    } else {
+                        visual.style.background = picked.id;
+                    }
+                } else {
+                    name.innerText = `『${picked.id}』`;
+                    visual.style.background = '#222';
+                    visual.innerText = picked.id;
+                }
+
+                const note = document.createElement('div');
+                note.className = 'gacha-multi-result-note';
+                note.innerText = alreadyOwned ? '（豆+10還元）' : '🎉 NEW';
+
+                item.appendChild(visual);
+                item.appendChild(name);
+                item.appendChild(note);
+                grid.appendChild(item);
+            });
+
+            overlay.classList.add('active');
+        }
+
+        document.getElementById('btn-gacha-multi-result-close').onclick = () => {
+            document.getElementById('gacha-multi-result-overlay').classList.remove('active');
+        };
+        document.getElementById('btn-gacha-skin-x10').onclick = () => pullGachaMulti('skin');
+        document.getElementById('btn-gacha-tattoo-x10').onclick = () => pullGachaMulti('tattoo');
         document.getElementById('btn-open-gacha').onclick = () => {
             updateBeanDisplays();
             showScreen('gacha-screen');
@@ -1327,6 +1528,35 @@
             bgmAudio.volume = bgmVolume / 100;
             bgmVolumeValue.innerText = bgmVolume + '%';
             localStorage.setItem('bgmVolume', bgmVolume);
+        };
+
+        // === 設定：ボール速度 ===
+        const BALL_SPEED_MULTIPLIERS = [0.6, 0.8, 1.0, 1.25, 1.5];
+        const BALL_SPEED_LABELS = ['①とても遅い', '②遅い', '③普通', '④速い', '⑤とても速い'];
+        let ballSpeedLevel = parseInt(localStorage.getItem('ballSpeedLevel'), 10);
+        if (isNaN(ballSpeedLevel) || ballSpeedLevel < 1 || ballSpeedLevel > 5) ballSpeedLevel = 3;
+
+        function getBallSpeedMultiplier() {
+            return BALL_SPEED_MULTIPLIERS[ballSpeedLevel - 1];
+        }
+
+        const ballSpeedSlider = document.getElementById('ballSpeedSlider');
+        const ballSpeedLabel = document.getElementById('ballSpeedLabel');
+        ballSpeedSlider.value = ballSpeedLevel;
+        ballSpeedLabel.innerText = BALL_SPEED_LABELS[ballSpeedLevel - 1];
+
+        ballSpeedSlider.oninput = (e) => {
+            ballSpeedLevel = parseInt(e.target.value, 10);
+            ballSpeedLabel.innerText = BALL_SPEED_LABELS[ballSpeedLevel - 1];
+            localStorage.setItem('ballSpeedLevel', ballSpeedLevel);
+        };
+
+        // === 設定画面の開閉 ===
+        document.getElementById('btn-open-settings').onclick = () => {
+            showScreen('settings-screen');
+        };
+        document.getElementById('btn-close-settings').onclick = () => {
+            showScreen('home-screen');
         };
 
         function showScreen(screenId) {
@@ -1727,7 +1957,7 @@
                 this.x = x;
                 this.y = y;
                 const angle = Math.random() * Math.PI * 2;
-                const speed = 4.4 * ((!isManualMode && !isAiMode) ? 1.5 : 1.0);
+                const speed = 4.4 * ((!isManualMode && !isAiMode) ? 1.5 : 1.0) * getBallSpeedMultiplier();
                 this.vx = Math.cos(angle) * speed;
                 this.vy = Math.sin(angle) * speed;
                 this.radius = 18 * 0.7;
@@ -1799,10 +2029,10 @@
                 }
 
                 const betSpeedMultiplier = (!isManualMode && !isAiMode) ? 1.5 : 1.0;
-                let currentSpeed = 4.4 * betSpeedMultiplier;
+                let currentSpeed = 4.4 * betSpeedMultiplier * getBallSpeedMultiplier();
                 if (this.weightDurationTimer > 0) {
                     this.weightDurationTimer--;
-                    currentSpeed = 1.6 * betSpeedMultiplier; 
+                    currentSpeed = 1.6 * betSpeedMultiplier * getBallSpeedMultiplier(); 
                 }
 
                 let inputX = 0;
