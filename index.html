@@ -831,7 +831,7 @@
             </div>
             <div class="settings-section">
                 <h3>🏆 称号</h3>
-                <div style="font-size: 0.7rem; color: #888; margin-bottom: 10px; text-align: center;">条件を達成すると獲得できます。装備した称号は試合中LEFT/RIGHTの表示部分に反映されます。</div>
+                <div style="font-size: 0.7rem; color: #888; margin-bottom: 10px; text-align: center;">条件を達成すると獲得でき、初回獲得時に🫘豆+100がもらえます。装備した称号は試合中LEFT/RIGHTの表示部分に反映されます。</div>
                 <div id="title-settings-list" class="title-list"></div>
             </div>
         </div>
@@ -870,6 +870,17 @@
             <div id="bingo-clear-name" class="gacha-result-name rainbow-text"></div>
             <div class="gacha-result-note">🎉 「備前 備中 BINGO！」を完全クリア！限定ゴッドランク報酬をゲット！</div>
             <button id="btn-bingo-clear-close" class="main-btn" style="width: auto; padding: 8px 24px;">閉じる</button>
+        </div>
+    </div>
+
+    <!-- 称号獲得オーバーレイ -->
+    <div id="title-unlock-overlay" class="gacha-result-overlay">
+        <div class="gacha-result-card rank-ace">
+            <div class="gacha-result-rank rank-text-ace">🏆 称号獲得！</div>
+            <div class="gacha-result-visual">🏆</div>
+            <div id="title-unlock-name" class="gacha-result-name"></div>
+            <div id="title-unlock-note" class="gacha-result-note"></div>
+            <button id="btn-title-unlock-close" class="main-btn" style="width: auto; padding: 8px 24px;">閉じる</button>
         </div>
     </div>
 
@@ -1596,6 +1607,39 @@
         ];
 
         let equippedTitle = localStorage.getItem('equippedTitle') || '';
+
+        let titleRewardsGiven = new Set();
+        try {
+            const rawTitleRewards = localStorage.getItem('titleRewardsGiven');
+            if (rawTitleRewards) titleRewardsGiven = new Set(JSON.parse(rawTitleRewards));
+        } catch (e) { /* 破損データは無視してデフォルトに戻す */ }
+        function saveTitleRewardsGiven() {
+            localStorage.setItem('titleRewardsGiven', JSON.stringify(Array.from(titleRewardsGiven)));
+        }
+
+        function checkTitleUnlocks() {
+            TITLES.forEach(t => {
+                if (!titleRewardsGiven.has(t.id) && t.check()) {
+                    titleRewardsGiven.add(t.id);
+                    saveTitleRewardsGiven();
+                    addBeans(100);
+                    updateBeanDisplays();
+                    showTitleUnlockOverlay(t);
+                }
+            });
+        }
+
+        function showTitleUnlockOverlay(t) {
+            document.getElementById('title-unlock-name').innerText = t.name;
+            document.getElementById('title-unlock-note').innerText = `条件「${t.desc}」を達成！ 🫘豆 +100 (所持豆: ${beans})`;
+            document.getElementById('title-unlock-overlay').classList.add('active');
+        }
+        document.getElementById('btn-title-unlock-close').onclick = () => {
+            document.getElementById('title-unlock-overlay').classList.remove('active');
+            renderTitleSettings();
+        };
+
+        checkTitleUnlocks();
 
         function getEquippedTitleName() {
             if (!equippedTitle) return '';
@@ -2800,6 +2844,7 @@
                     bingoStats.traits[selectedTrait.id]++;
                     saveBingoStats();
                     checkBingoMissions();
+                    checkTitleUnlocks();
                 }
 
                 const isFirstTime = !gameSeenTraits.has(selectedTrait.id);
@@ -2985,6 +3030,7 @@
                         bingoStats.chestOpened++;
                         saveBingoStats();
                         checkBingoMissions();
+                        checkTitleUnlocks();
                     }
                 };
                 checkChestCollision(leftBall);
@@ -3019,6 +3065,7 @@
                         bingoStats.healCollected++;
                         saveBingoStats();
                         checkBingoMissions();
+                        checkTitleUnlocks();
                     }
                 };
                 checkHealItemCollision(leftBall);
@@ -3506,6 +3553,7 @@
                 }
                 saveBingoStats();
                 checkBingoMissions();
+                checkTitleUnlocks();
 
                 let titleText = "";
                 let subStatsText = "";
