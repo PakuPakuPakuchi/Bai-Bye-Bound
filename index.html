@@ -805,6 +805,18 @@
                     <button id="btn-gacha-tattoo-x10" class="main-btn" style="width: auto; padding: 10px 20px;">10連まわす (250🫘)</button>
                 </div>
             </div>
+            <div class="gacha-banner">
+                <h3>🏳️ 期間限定！国旗セレクション</h3>
+                <div class="gacha-rate">
+                    ワンポイント(🇬🇧🇫🇷🇩🇪🇮🇹🇪🇸🇨🇦🇧🇷🇦🇺🇨🇳🇰🇷🇮🇳🇲🇽🇹🇭) 70%<br>
+                    エース(🇯🇵🇺🇸🇬🇧) 29%<br>
+                    ゴッド(🇰🇵) 1%
+                </div>
+                <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+                    <button id="btn-gacha-flag" class="main-btn" style="width: auto; padding: 10px 20px;">1回まわす (25🫘)</button>
+                    <button id="btn-gacha-flag-x10" class="main-btn" style="width: auto; padding: 10px 20px;">10連まわす (250🫘)</button>
+                </div>
+            </div>
         </div>
         <button id="btn-close-gacha" class="main-btn" style="width: auto; padding: 10px 30px; font-size: 1.2rem; margin-top: 10px;">ホームに戻る</button>
     </div>
@@ -1158,12 +1170,29 @@
             { id: '😇', rank: 'bingo' } // 「備前 備中 BINGO！」完全クリア限定（通常ガチャには出現しない）
         ];
 
+        // 期間限定！国旗セレクション：タトゥーとして国旗を追加するピックアップ
+        const FLAG_POOL = [
+            { id: '🇬🇧', rank: 'point' }, { id: '🇫🇷', rank: 'point' }, { id: '🇩🇪', rank: 'point' },
+            { id: '🇮🇹', rank: 'point' }, { id: '🇪🇸', rank: 'point' }, { id: '🇨🇦', rank: 'point' },
+            { id: '🇧🇷', rank: 'point' }, { id: '🇦🇺', rank: 'point' }, { id: '🇨🇳', rank: 'point' },
+            { id: '🇰🇷', rank: 'point' }, { id: '🇮🇳', rank: 'point' }, { id: '🇲🇽', rank: 'point' },
+            { id: '🇹🇭', rank: 'point' },
+            { id: '🇯🇵', rank: 'ace' }, { id: '🇺🇸', rank: 'ace' }, { id: '🇬🇧', rank: 'ace' },
+            { id: '🇰🇵', rank: 'god' }
+        ];
+
         const RANK_INFO = {
             point: { label: 'ワンポイント' },
             ace:   { label: 'エース' },
             god:   { label: 'ゴッド' }
         };
         const GACHA_COST = 25;
+
+        function getGachaPoolInfo(type) {
+            if (type === 'skin') return { pool: SKIN_POOL, ownedSet: ownedSkins, saveKey: 'ownedSkins' };
+            if (type === 'flag') return { pool: FLAG_POOL, ownedSet: ownedTattoos, saveKey: 'ownedTattoos' };
+            return { pool: TATTOO_POOL, ownedSet: ownedTattoos, saveKey: 'ownedTattoos' };
+        }
 
         function resolveSkinColor(skinId) {
             if (skinId === 'rainbow') {
@@ -1188,9 +1217,7 @@
                 alert(`豆が足りません（必要:${GACHA_COST}🫘 / 所持:${beans}🫘）`);
                 return;
             }
-            const pool = (type === 'skin') ? SKIN_POOL : TATTOO_POOL;
-            const ownedSet = (type === 'skin') ? ownedSkins : ownedTattoos;
-            const saveKey = (type === 'skin') ? 'ownedSkins' : 'ownedTattoos';
+            const { pool, ownedSet, saveKey } = getGachaPoolInfo(type);
 
             const rank = pickGachaRank();
             const candidates = pool.filter(item => item.rank === rank);
@@ -1247,6 +1274,7 @@
         };
         document.getElementById('btn-gacha-skin').onclick = () => pullGacha('skin');
         document.getElementById('btn-gacha-tattoo').onclick = () => pullGacha('tattoo');
+        document.getElementById('btn-gacha-flag').onclick = () => pullGacha('flag');
 
         // ===== ガチャ10連 =====
         const GACHA_MULTI_COUNT = 10;
@@ -1257,9 +1285,7 @@
                 alert(`豆が足りません（必要:${totalCost}🫘 / 所持:${beans}🫘）`);
                 return;
             }
-            const pool = (type === 'skin') ? SKIN_POOL : TATTOO_POOL;
-            const ownedSet = (type === 'skin') ? ownedSkins : ownedTattoos;
-            const saveKey = (type === 'skin') ? 'ownedSkins' : 'ownedTattoos';
+            const { pool, ownedSet, saveKey } = getGachaPoolInfo(type);
 
             const results = [];
             for (let i = 0; i < GACHA_MULTI_COUNT; i++) {
@@ -1329,6 +1355,7 @@
         };
         document.getElementById('btn-gacha-skin-x10').onclick = () => pullGachaMulti('skin');
         document.getElementById('btn-gacha-tattoo-x10').onclick = () => pullGachaMulti('tattoo');
+        document.getElementById('btn-gacha-flag-x10').onclick = () => pullGachaMulti('flag');
         document.getElementById('btn-open-gacha').onclick = () => {
             updateBeanDisplays();
             showScreen('gacha-screen');
@@ -1919,7 +1946,8 @@
             if (summaryEl) {
                 summaryEl.innerHTML =
                     `🎨 スキン所持数　${renderRankSummary(SKIN_POOL, ownedSkins)}<br>` +
-                    `🈺 タトゥー所持数　${renderRankSummary(TATTOO_POOL, ownedTattoos)}`;
+                    `🈺 タトゥー所持数　${renderRankSummary(TATTOO_POOL, ownedTattoos)}<br>` +
+                    `🏳️ 国旗タトゥー所持数　${renderRankSummary(FLAG_POOL, ownedTattoos)}`;
             }
 
             const skinSides = [
@@ -1962,7 +1990,15 @@
             ];
 
             // 所持しているタトゥーだけを表示（未所持の内容は見せない）。「なし」も選べるようにする
-            const ownedTattooItems = TATTOO_POOL.filter(tattoo => ownedTattoos.has(tattoo.id));
+            const combinedTattooPool = [];
+            const seenTattooIds = new Set();
+            TATTOO_POOL.concat(FLAG_POOL).forEach(t => {
+                if (!seenTattooIds.has(t.id)) {
+                    seenTattooIds.add(t.id);
+                    combinedTattooPool.push(t);
+                }
+            });
+            const ownedTattooItems = combinedTattooPool.filter(tattoo => ownedTattoos.has(tattoo.id));
             tattooSides.forEach(side => {
                 const noneContainer = document.createElement('div');
                 noneContainer.style.textAlign = 'center';
