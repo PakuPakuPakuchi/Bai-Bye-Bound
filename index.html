@@ -526,6 +526,52 @@
         .title-item-badge { font-size: 0.7rem; color: #ffd700; white-space: nowrap; }
         .title-item.locked .title-item-badge { color: #888; }
 
+        /* ===== ランキング掲載トグル ===== */
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .toggle-row-label { font-size: 0.85rem; }
+        .toggle-row-sub { font-size: 0.65rem; color: #888; margin-top: 4px; }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+            flex-shrink: 0;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .switch-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 28px;
+            transition: 0.2s;
+        }
+        .switch-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #ccc;
+            border-radius: 50%;
+            transition: 0.2s;
+        }
+        .switch input:checked + .switch-slider {
+            background-color: #ffd700;
+            border-color: #ffd700;
+        }
+        .switch input:checked + .switch-slider:before {
+            transform: translateX(22px);
+            background-color: #111;
+        }
+
         /* ===== 迷彩柄(ゴッドランク限定スキン) ===== */
         .camo-bg {
             background: repeating-linear-gradient(135deg, #4b5320 0px, #4b5320 18px, #6b8e23 18px, #6b8e23 36px, #3b3b2e 36px, #3b3b2e 54px, #556b2f 54px, #556b2f 72px) !important;
@@ -850,6 +896,22 @@
         </div>
         <div id="collection-summary" style="font-size: 0.8rem; color: #aaa; margin-bottom: 10px; text-align: center;"></div>
         <div style="font-size: 0.75rem; color: #666; margin-bottom: 15px;">未所持のスキン・タトゥーは🎰ガチャで入手できます（内容は入手するまで分かりません）</div>
+
+        <div class="settings-section" style="width: 100%; max-width: 700px; box-sizing: border-box; margin-bottom: 15px;">
+            <h3>🏆 称号</h3>
+            <div style="font-size: 0.7rem; color: #888; margin-bottom: 10px; text-align: center;">条件を達成すると獲得でき、初回獲得時に🫘豆+100がもらえます。LEFT/RIGHTそれぞれ別々の称号を装備できます。</div>
+            <div class="title-selection">
+                <div class="title-box">
+                    <h4>LEFT</h4>
+                    <div id="title-settings-list-left" class="title-list"></div>
+                </div>
+                <div class="title-box">
+                    <h4>RIGHT</h4>
+                    <div id="title-settings-list-right" class="title-list"></div>
+                </div>
+            </div>
+        </div>
+
         <button id="btn-close-skin" class="main-btn" style="width: auto; padding: 10px 30px; font-size: 1.2rem;">ホームに戻る</button>
     </div>
 
@@ -934,17 +996,16 @@
                 </div>
             </div>
             <div class="settings-section">
-                <h3>🏆 称号</h3>
-                <div style="font-size: 0.7rem; color: #888; margin-bottom: 10px; text-align: center;">条件を達成すると獲得でき、初回獲得時に🫘豆+100がもらえます。LEFT/RIGHTそれぞれ別々の称号を装備できます。</div>
-                <div class="title-selection">
-                    <div class="title-box">
-                        <h4>LEFT</h4>
-                        <div id="title-settings-list-left" class="title-list"></div>
+                <h3>🏆 ランキング</h3>
+                <div class="toggle-row">
+                    <div>
+                        <div class="toggle-row-label">リアルタイムランキングに自分の記録を掲載する</div>
+                        <div class="toggle-row-sub">オフにすると、これ以降の試合結果はランキングに送信されなくなります</div>
                     </div>
-                    <div class="title-box">
-                        <h4>RIGHT</h4>
-                        <div id="title-settings-list-right" class="title-list"></div>
-                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="rankingVisibleToggle">
+                        <span class="switch-slider"></span>
+                    </label>
                 </div>
             </div>
         </div>
@@ -1851,7 +1912,6 @@
 
         // === 設定画面の開閉 ===
         document.getElementById('btn-open-settings').onclick = () => {
-            renderTitleSettings();
             showScreen('settings-screen');
         };
         document.getElementById('btn-close-settings').onclick = () => {
@@ -1953,12 +2013,21 @@
         let currentRankingCategory = 'bet';
         let rankingRealtimeChannel = null;
 
+        // ===== ランキング掲載オン/オフ設定 =====
+        let rankingVisible = localStorage.getItem('rankingVisible') !== 'false'; // デフォルトはオン
+        const rankingVisibleToggle = document.getElementById('rankingVisibleToggle');
+        rankingVisibleToggle.checked = rankingVisible;
+        rankingVisibleToggle.addEventListener('change', () => {
+            rankingVisible = rankingVisibleToggle.checked;
+            localStorage.setItem('rankingVisible', rankingVisible ? 'true' : 'false');
+        });
+
         // ===== ランキング結果の送信 =====
         // 直接UPDATEを許可せず、DB側のRPC関数（SECURITY DEFINER）経由でのみ
         // 加算・更新できる構成にしているため、anonキーが漏れても
         // 値の大幅な改ざんや他人のスコア破壊はできない設計になっている。
         async function submitBetResult(isDraw, isCorrect) {
-            if (!RANKING_ENABLED || !nickname) return;
+            if (!RANKING_ENABLED || !nickname || !rankingVisible) return;
             try {
                 await supabaseClient.rpc('submit_bet_result', {
                     p_player_id: playerId,
@@ -1969,7 +2038,7 @@
             } catch (e) { console.warn('ランキング送信(bet)に失敗しました', e); }
         }
         async function submitManualPlay() {
-            if (!RANKING_ENABLED || !nickname) return;
+            if (!RANKING_ENABLED || !nickname || !rankingVisible) return;
             try {
                 await supabaseClient.rpc('submit_manual_play', {
                     p_player_id: playerId,
@@ -1978,7 +2047,7 @@
             } catch (e) { console.warn('ランキング送信(manual)に失敗しました', e); }
         }
         async function submitAiWin() {
-            if (!RANKING_ENABLED || !nickname) return;
+            if (!RANKING_ENABLED || !nickname || !rankingVisible) return;
             try {
                 await supabaseClient.rpc('submit_ai_win', {
                     p_player_id: playerId,
@@ -2141,6 +2210,7 @@
 
         document.getElementById('btn-open-skin').onclick = () => {
             renderCollectionUI();
+            renderTitleSettings();
             showScreen('skin-screen');
         };
 
