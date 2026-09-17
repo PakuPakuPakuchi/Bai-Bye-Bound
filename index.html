@@ -1250,8 +1250,29 @@
             aiTimer = 0;
 
             if (Math.random() < settings.chaseChance) {
-                let dx = leftBall.x - rightBall.x;
-                let dy = leftBall.y - rightBall.y;
+                // 優先度判定：
+                // 相手(LEFT)のHPが多く、自分(RIGHT)のHPが少ない → 回復アイテム＞金の宝箱＞敵
+                // 自分(RIGHT)のHPが多く、相手(LEFT)のHPが少ない → 敵＞金の宝箱＞回復アイテム
+                // それ以外（HPが同じ等）は従来通り敵を優先
+                let priorityOrder;
+                if (leftBall.hp > rightBall.hp) {
+                    priorityOrder = ['heal', 'chest', 'enemy'];
+                } else if (rightBall.hp > leftBall.hp) {
+                    priorityOrder = ['enemy', 'chest', 'heal'];
+                } else {
+                    priorityOrder = ['enemy'];
+                }
+
+                let chosenTarget = null;
+                for (const p of priorityOrder) {
+                    if (p === 'heal' && healItem) { chosenTarget = healItem; break; }
+                    if (p === 'chest' && chest) { chosenTarget = chest; break; }
+                    if (p === 'enemy') { chosenTarget = leftBall; break; }
+                }
+                if (!chosenTarget) chosenTarget = leftBall;
+
+                let dx = chosenTarget.x - rightBall.x;
+                let dy = chosenTarget.y - rightBall.y;
                 const dist = Math.hypot(dx, dy) || 1;
                 dx /= dist;
                 dy /= dist;
