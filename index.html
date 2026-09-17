@@ -1245,6 +1245,17 @@
         function updateAI() {
             if (!isAiMode || !gameStarted || winner !== null) return;
             const settings = AI_DIFFICULTY[aiDifficulty];
+
+            // 上級CPU限定：金の宝箱が出現した瞬間、反応間隔やノイズを無視して最速で直進取得しにいく
+            if (aiDifficulty === 'hard' && chest) {
+                let dx = chest.x - rightBall.x;
+                let dy = chest.y - rightBall.y;
+                const dist = Math.hypot(dx, dy) || 1;
+                aiInputX = dx / dist;
+                aiInputY = dy / dist;
+                return;
+            }
+
             aiTimer++;
             if (aiTimer < settings.reactionInterval) return;
             aiTimer = 0;
