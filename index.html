@@ -847,6 +847,7 @@
         <h1>倍々バウンド</h1>
         <div class="nickname-greeting">ようこそ、<span id="home-nickname">プレイヤー</span>さん<button id="btn-change-nickname">変更</button></div>
         <div class="stats">🫘 所持豆: <span id="home-bean-count">0</span></div>
+        <div class="stats" id="home-level-stats" style="font-size: 1rem; color: #8fd6ff; text-shadow: 0 0 10px rgba(143,214,255,0.5);">⭐ Lv.<span id="home-level">1</span>　｜　あと<span id="home-level-progress">1</span>試合でレベルアップ</div>
         <button id="btn-open-tutorial" class="main-btn" style="background: linear-gradient(45deg, #0f5c46, #2ee6a6); border-color: #2ee6a6;">📖 遊び方・チュートリアル</button>
         <button id="btn-open-bingo" class="main-btn" style="background: linear-gradient(45deg, #7B1173, #E03C8A); border-color: #E03C8A;">🎉 備前 備中 BINGO！</button>
         <button id="btn-start-auto" class="main-btn">観戦モード (ベット)</button>
@@ -1132,7 +1133,8 @@
 
     <div id="result-screen" class="screen">
         <h2 id="result-title">WINNER: LEFT</h2>
-        <div class="stats" id="result-sub-stats" style="margin-bottom: 30px;">予想的中！</div>
+        <div class="stats" id="result-sub-stats" style="margin-bottom: 10px;">予想的中！</div>
+        <div class="stats" id="result-level-note" style="display:none; margin-bottom: 30px; color: #8fd6ff; text-shadow: 0 0 10px rgba(143,214,255,0.5);"></div>
         <button id="btn-retry" class="main-btn">もう一度プレイ</button>
         <button id="btn-result-home" class="main-btn">ホームに戻る</button>
     </div>
@@ -1619,6 +1621,31 @@
 
         let bingoStats = loadBingoStats();
 
+        // ===== レベルシステム =====
+        // レベル1でスタート。レベルNからN+1に上がるにはN試合必要
+        // （Lv1→2:1試合、Lv2→3:2試合、Lv3→4:3試合…と徐々にハードルが上がる）
+        // レベルLに到達するのに必要な累計試合数 = L*(L-1)/2 (三角数)
+        function matchesRequiredForLevel(level) {
+            return level * (level - 1) / 2;
+        }
+        function getLevelInfo(totalMatches) {
+            const m = Math.max(0, totalMatches || 0);
+            // L*(L-1)/2 <= m を満たす最大の整数Lを求める
+            const level = Math.floor((1 + Math.sqrt(1 + 8 * m)) / 2);
+            const matchesForNext = matchesRequiredForLevel(level + 1);
+            const matchesIntoLevel = m - matchesRequiredForLevel(level);
+            const matchesNeededThisLevel = matchesForNext - matchesRequiredForLevel(level);
+            const remaining = matchesForNext - m;
+            return { level, matchesIntoLevel, matchesNeededThisLevel, remaining };
+        }
+        function updateLevelDisplays() {
+            const info = getLevelInfo(bingoStats.totalMatches);
+            const levelEl = document.getElementById('home-level');
+            const progressEl = document.getElementById('home-level-progress');
+            if (levelEl) levelEl.innerText = info.level;
+            if (progressEl) progressEl.innerText = info.remaining;
+        }
+
         // 5x5(25マス)のミッション定義。indexはビンゴカードの並び順（行優先）に対応。
         const BINGO_MISSIONS = [
             { label: '通常ゲームを合計3回プレイする',            target: 3,  get: () => bingoStats.totalMatches },
@@ -2000,6 +2027,7 @@
         }
 
         updateBeanDisplays();
+        updateLevelDisplays();
 
         // ============================================================
         // ===== オンラインランキング (Supabase) =====
@@ -4010,6 +4038,9 @@
             if (winner !== null && !resultProcessed) {
                 resultProcessed = true;
 
+                // ===== レベルシステム：試合終了ごとにレベル判定 =====
+                const levelBefore = getLevelInfo(bingoStats.totalMatches).level;
+
                 // ===== 「備前 備中 BINGO！」プレイ回数・勝利数の記録 =====
                 bingoStats.totalMatches++;
                 if (isManualMode) {
@@ -4022,8 +4053,16 @@
                     bingoStats.betCorrect++;
                 }
                 saveBingoStats();
+                updateLevelDisplays();
                 checkBingoMissions();
                 checkTitleUnlocks();
+
+                const levelAfter = getLevelInfo(bingoStats.totalMatches).level;
+                const leveledUp = levelAfter > levelBefore;
+                if (leveledUp) {
+                    addBeans(100 * (levelAfter - levelBefore));
+                    updateBeanDisplays();
+                }
 
                 // ===== オンラインランキング(Supabase)への結果送信 =====
                 if (isManualMode) {
@@ -4091,6 +4130,18 @@
                 
                 resultTitleEl.innerText = titleText;
                 document.getElementById('result-sub-stats').innerText = subStatsText;
+
+                const levelNoteEl = document.getElementById('result-level-note');
+                if (levelNoteEl) {
+                    if (leveledUp) {
+                        const infoAfter = getLevelInfo(bingoStats.totalMatches);
+                        const beansGained = 100 * (levelAfter - levelBefore);
+                        levelNoteEl.innerText = `🎊 レベルアップ！ Lv.${levelBefore} → Lv.${levelAfter} 🎊 🫘+${beansGained} (所持豆: ${beans})（次のレベルまであと${infoAfter.remaining}試合）`;
+                        levelNoteEl.style.display = 'block';
+                    } else {
+                        levelNoteEl.style.display = 'none';
+                    }
+                }
 
                 setTimeout(() => {
                     showScreen('result-screen');
