@@ -2485,6 +2485,7 @@
         let finisherX = 0;
         let finisherY = 0;
         let finisherLoserName = '';
+        let finisherLoserBall = null;
         let finisherPhysicsCounter = 0;
         let doSimStep = true;
 
@@ -2499,6 +2500,7 @@
             finisherX = loserBall.x;
             finisherY = loserBall.y;
             finisherLoserName = loserBall.name;
+            finisherLoserBall = loserBall;
             finisherPhysicsCounter = 0;
             shakeFrames = 20;
             shakeIntensity = 16;
@@ -2629,6 +2631,9 @@
 
             takeDamage(amount) {
                 if (amount <= 0 || this.isClone) return;
+                // 必殺演出中は、演出対象(敗者)以外はダメージを受けない
+                // (演出中にもう一方がダウンして引き分け判定になるのを防ぐ)
+                if (finisherActive && this !== finisherLoserBall) return;
                 const wasAlive = this.hp > 0;
                 this.hp = Math.max(0, this.hp - amount);
                 if (wasAlive && this.hp <= 0 && !this.exploded) {
@@ -4163,6 +4168,7 @@
                 finisherTimer--;
                 if (finisherTimer <= 0) {
                     finisherActive = false;
+                    finisherLoserBall = null;
                 }
             } else {
                 checkWinCondition();
