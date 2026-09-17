@@ -947,7 +947,7 @@
                 <h3>🏳️ 期間限定！国旗セレクション</h3>
                 <div class="gacha-rate">
                     ワンポイント(🇬🇧🇫🇷🇩🇪🇮🇹🇪🇸🇨🇦🇧🇷🇦🇺🇨🇳🇰🇷🇮🇳🇲🇽🇹🇭) 70%<br>
-                    エース(🇯🇵🇺🇸🇬🇧) 29%<br>
+                    エース(🇯🇵🇺🇸🇸🇱) 29%<br>
                     ゴッド(🇰🇵) 1%
                 </div>
                 <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
@@ -1361,7 +1361,7 @@
             { id: '🇧🇷', rank: 'point' }, { id: '🇦🇺', rank: 'point' }, { id: '🇨🇳', rank: 'point' },
             { id: '🇰🇷', rank: 'point' }, { id: '🇮🇳', rank: 'point' }, { id: '🇲🇽', rank: 'point' },
             { id: '🇹🇭', rank: 'point' },
-            { id: '🇯🇵', rank: 'ace' }, { id: '🇺🇸', rank: 'ace' }, { id: '🇬🇧', rank: 'ace' },
+            { id: '🇯🇵', rank: 'ace' }, { id: '🇺🇸', rank: 'ace' }, { id: '🇸🇱', rank: 'ace' },
             { id: '🇰🇵', rank: 'god' }
         ];
 
@@ -2647,8 +2647,17 @@
                         }
                     } else if (this.name === 'RIGHT') {
                         if (isAiMode) {
-                            inputX = aiInputX;
-                            inputY = aiInputY;
+                            if (this.keyRemapTimer > 0 && this.keyRemap) {
+                                const upAmt = Math.max(0, -aiInputY);
+                                const downAmt = Math.max(0, aiInputY);
+                                const leftAmt = Math.max(0, -aiInputX);
+                                const rightAmt = Math.max(0, aiInputX);
+                                inputX = upAmt * this.keyRemap.up.x + downAmt * this.keyRemap.down.x + leftAmt * this.keyRemap.left.x + rightAmt * this.keyRemap.right.x;
+                                inputY = upAmt * this.keyRemap.up.y + downAmt * this.keyRemap.down.y + leftAmt * this.keyRemap.left.y + rightAmt * this.keyRemap.right.y;
+                            } else {
+                                inputX = aiInputX;
+                                inputY = aiInputY;
+                            }
                         } else if (this.keyRemapTimer > 0 && this.keyRemap) {
                             if (keys['i']) { inputX += this.keyRemap.up.x; inputY += this.keyRemap.up.y; }
                             if (keys['k']) { inputX += this.keyRemap.down.x; inputY += this.keyRemap.down.y; }
@@ -3868,17 +3877,29 @@
                 const trapPulse = 1 + Math.sin(Date.now() / 180) * 0.1;
                 ctx.scale(trapPulse, trapPulse);
 
+                const ownerBall = (trap.ownerName === leftBall.name) ? leftBall : rightBall;
+                const ownerColor = resolveSkinColor(ownerBall.color);
+
                 ctx.shadowBlur = 10;
-                ctx.shadowColor = '#ff3333';
-                ctx.strokeStyle = '#ff3333';
-                ctx.lineWidth = 2;
+                ctx.shadowColor = ownerColor;
+                ctx.strokeStyle = ownerColor;
+                ctx.lineWidth = 3;
                 ctx.beginPath();
                 ctx.arc(0, 0, trap.radius, 0, Math.PI * 2);
                 ctx.stroke();
 
+                // 罠の所有者を示す小さなインジケーター（左上に色付きの小さな円）
+                ctx.beginPath();
+                ctx.arc(-trap.radius * 0.65, -trap.radius * 0.65, 4, 0, Math.PI * 2);
+                ctx.fillStyle = ownerColor;
+                ctx.shadowBlur = 4;
+                ctx.shadowColor = ownerColor;
+                ctx.fill();
+
                 ctx.font = "14px Arial";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
+                ctx.shadowBlur = 0;
                 ctx.fillText("🪤", 0, 0);
                 ctx.restore();
             });
